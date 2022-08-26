@@ -24,14 +24,9 @@ app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
 });
 
-const isValidDate = (date) => {
-  return !isNaN(Date.parse(date))
-}
-
 const isDate = (date) => {
   return (new Date(date) !== "Invalid Date") && !isNaN(new Date(date));
 }
-
 
 const formatDate = (date) => {
   let timeStamp;
@@ -43,25 +38,39 @@ const formatDate = (date) => {
     timeStamp = new Date(date).getTime();
     utcStuff = new Date(date).toUTCString();
     isValid = isDate(date);
-  } else {
+  } 
+  else if (/^\d+$/.test(date)) {
     timeStamp = new Date(parseInt(date, 10)).getTime();
     utcStuff = new Date(parseInt(date, 10)).toUTCString();
     isValid = isDate(parseInt(date, 10));
+  }
+  else {
+    timeStamp = new Date(date).getTime();
+    utcStuff = new Date(date).toUTCString();
+    isValid = isDate(date);
   }
   console.log([timeStamp, utcStuff, isValid])
   return [timeStamp, utcStuff, isValid];
 }
 
+app.get("/api/", function(req, res) {
+  const dattee = new Date();
+  res.json({
+    "unix": formatDate(dattee.getTime())[0],
+    "utc": formatDate(dattee.getTime())[0]
+  })
+})
+
 app.get("/api/:date?", function(req, res) {
   const date = req.params.date;
 
   if (!(formatDate(date)[2])) {
-    res.json({ error: "Invalid Date "});
+    res.json({ error: "Invalid Date"});
   }
   else {
     res.json({
-      "unix": !date ? formatDate(new Date().getTime())[0] : formatDate(date)[0],
-      "utc": !date ? formatDate(new Date().getTime())[1] : formatDate(date)[1]
+      "unix": formatDate(date)[0],
+      "utc": formatDate(date)[1]
     })
   }
 })
